@@ -27,9 +27,15 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import org.example.project.ui.addtransaction.AddEditTransactionScreen
+import org.example.project.ui.annualexpense.AnnualExpenseScreen
 import org.example.project.ui.budget.BudgetScreen
+import org.example.project.ui.calendar.CalendarScreen
 import org.example.project.ui.goals.GoalsScreen
 import org.example.project.ui.home.HomeScreen
+import org.example.project.ui.investment.InvestmentScreen
+import org.example.project.ui.loan.LoanScreen
+import org.example.project.ui.reports.ReportsScreen
+import org.example.project.ui.settings.SettingsScreen
 import org.example.project.ui.statistics.StatisticsScreen
 import org.example.project.ui.transactions.TransactionsScreen
 import org.koin.compose.viewmodel.koinViewModel
@@ -41,11 +47,20 @@ data class BottomNavItem(
 )
 
 val bottomNavItems = listOf(
-    BottomNavItem("Home", Icons.Filled.Home, HomeRoute),
-    BottomNavItem("Transactions", Icons.Filled.Receipt, TransactionsRoute()),
-    BottomNavItem("Statistics", Icons.Filled.BarChart, StatisticsRoute),
-    BottomNavItem("Budget", Icons.Filled.AccountBalance, BudgetRoute),
-    BottomNavItem("Goals", Icons.Filled.Savings, GoalsRoute)
+    BottomNavItem("Home",         Icons.Filled.Home,           HomeRoute),
+    BottomNavItem("Transactions", Icons.Filled.Receipt,        TransactionsRoute()),
+    BottomNavItem("Statistics",   Icons.Filled.BarChart,       StatisticsRoute),
+    BottomNavItem("Budget",       Icons.Filled.AccountBalance, BudgetRoute),
+    BottomNavItem("Goals",        Icons.Filled.Savings,        GoalsRoute)
+)
+
+/** Routes that should show the bottom navigation bar. */
+private val bottomBarRoutes = setOf(
+    HomeRoute::class.simpleName,
+    TransactionsRoute::class.simpleName,
+    StatisticsRoute::class.simpleName,
+    BudgetRoute::class.simpleName,
+    GoalsRoute::class.simpleName
 )
 
 @Composable
@@ -54,19 +69,17 @@ fun MainNavigation() {
     val currentEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentEntry?.destination?.route
 
-    val showBottomBar = bottomNavItems.any { item ->
-        if (item.route == TransactionsRoute()) {
-            val isShow = currentRoute?.contains(item.route::class.simpleName ?: "") == true
-            if (isShow) {
-                val model = currentEntry?.toRoute<TransactionsRoute>()
-                model?.date == null
-            } else {
-                false
-            }
-        } else {
-            currentRoute?.contains(item.route::class.simpleName ?: "") == true
-        }
-
+    // Show bottom bar only on the 5 primary destinations (not on date-filtered transactions)
+    val showBottomBar = bottomBarRoutes.any { routeName ->
+        currentRoute?.contains(routeName ?: "") == true
+    } && run {
+        // Hide when TransactionsRoute has a date filter (i.e. navigated from calendar)
+        val isDateTransactions = currentRoute?.contains(
+            TransactionsRoute::class.simpleName ?: ""
+        ) == true
+        if (isDateTransactions) {
+            currentEntry?.toRoute<TransactionsRoute>()?.date == null
+        } else true
     }
 
     Scaffold(
@@ -98,59 +111,42 @@ fun MainNavigation() {
             navController = navController,
             startDestination = HomeRoute,
             modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
-
             enterTransition = {
-                fadeIn(tween(300)) +
-                        scaleIn(
-                            initialScale = 0.96f,
-                            animationSpec = tween(300)
-                        )
+                fadeIn(tween(300)) + scaleIn(initialScale = 0.96f, animationSpec = tween(300))
             },
-
-                    exitTransition = {
-                fadeOut(tween(200)) +
-                        scaleOut(
-                            targetScale = 0.96f,
-                            animationSpec = tween(200)
-                        )
+            exitTransition = {
+                fadeOut(tween(200)) + scaleOut(targetScale = 0.96f, animationSpec = tween(200))
             }
-//            enterTransition = {
-//                fadeIn(tween(300)) +
-//                        scaleIn(
-//                            initialScale = 0.92f,
-//                            animationSpec = tween(300)
-//                        )
-//            },
-//
-//            exitTransition = {
-//                fadeOut(tween(200)) +
-//                        scaleOut(
-//                            targetScale = 1.05f,
-//                            animationSpec = tween(200)
-//                        )
-//            }
         ) {
+
+            // ── Bottom nav screens ─────────────────────────────────────────────
+
             composable<HomeRoute> {
                 HomeScreen(
                     viewModel = koinViewModel(),
                     onAddTransactionClick = { navController.navigate(AddEditTransactionRoute()) },
-                    onTransactionClick = { id -> navController.navigate(AddEditTransactionRoute(id)) }
+                    onTransactionClick = { id -> navController.navigate(AddEditTransactionRoute(id)) },
+                    onNavigateToCalendar    = { navController.navigate(CalendarRoute) },
+                    onNavigateToReports     = { navController.navigate(ReportsRoute) },
+                    onNavigateToAnnualBills = { navController.navigate(AnnualExpenseRoute) },
+                    onNavigateToLoans       = { navController.navigate(LoanRoute) },
+                    onNavigateToInvestments = { navController.navigate(InvestmentRoute) },
+                    onNavigateToSettings    = { navController.navigate(SettingsRoute) }
                 )
             }
 
-            composable<TransactionsRoute> { backStackEntry ->
+            composable<TransactionsRoute> {
                 TransactionsScreen(
                     viewModel = koinViewModel(),
                     onAddClick = { navController.navigate(AddEditTransactionRoute()) },
                     onTransactionClick = { id -> navController.navigate(AddEditTransactionRoute(id)) },
-                    onNavigateBack = {
-                        navController.popBackStack()
-                    })
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
 
             composable<StatisticsRoute> {
-                StatisticsScreen(viewModel = koinViewModel()) {
-                    navController.navigate(TransactionsRoute(it))
+                StatisticsScreen(viewModel = koinViewModel()) { date ->
+                    navController.navigate(TransactionsRoute(date))
                 }
             }
 
@@ -162,11 +158,59 @@ fun MainNavigation() {
                 GoalsScreen(viewModel = koinViewModel())
             }
 
+            // ── Add / Edit transaction ─────────────────────────────────────────
+
             composable<AddEditTransactionRoute> { backStackEntry ->
                 val route: AddEditTransactionRoute = backStackEntry.toRoute()
                 AddEditTransactionScreen(
                     viewModel = koinViewModel(),
                     transactionId = route.transactionId,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            // ── New feature screens ────────────────────────────────────────────
+
+            composable<CalendarRoute> {
+                CalendarScreen(
+                    viewModel = koinViewModel(),
+                    onDayClick = { dateStr ->
+                        navController.navigate(TransactionsRoute(date = dateStr))
+                    }
+                )
+            }
+
+            composable<ReportsRoute> {
+                ReportsScreen(
+                    viewModel = koinViewModel(),
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<AnnualExpenseRoute> {
+                AnnualExpenseScreen(
+                    viewModel = koinViewModel(),
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<LoanRoute> {
+                LoanScreen(
+                    viewModel = koinViewModel(),
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<InvestmentRoute> {
+                InvestmentScreen(
+                    viewModel = koinViewModel(),
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<SettingsRoute> {
+                SettingsScreen(
+                    viewModel = koinViewModel(),
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

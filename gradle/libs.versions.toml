@@ -57,7 +57,10 @@ room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 
 # DataStore
-datastore-preferences = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
+datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
+
+datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+
 
 # KotlinX
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
@@ -70,6 +73,7 @@ navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-co
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
 androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

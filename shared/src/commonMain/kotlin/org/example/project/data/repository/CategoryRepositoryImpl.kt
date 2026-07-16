@@ -16,6 +16,9 @@ class CategoryRepositoryImpl(
     override fun getAllCategories(): Flow<List<Category>> =
         categoryDao.getAllCategories().map { list -> list.map { it.toDomain() } }
 
+    override suspend fun getAllCategoriesOnce(): List<Category> =
+        categoryDao.getAllCategoriesOnce().map { it.toDomain() }
+
     override fun getCategoriesByType(type: TransactionType): Flow<List<Category>> =
         categoryDao.getCategoriesByType(type.name).map { list -> list.map { it.toDomain() } }
 

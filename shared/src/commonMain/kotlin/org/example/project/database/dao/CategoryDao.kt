@@ -10,6 +10,9 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE isArchived = 0 ORDER BY name ASC")
     fun getAllCategories(): Flow<List<CategoryEntity>>
 
+    @Query("SELECT * FROM categories WHERE isArchived = 0 ORDER BY name ASC")
+    suspend fun getAllCategoriesOnce(): List<CategoryEntity>
+
     @Query("SELECT * FROM categories WHERE type = :type AND isArchived = 0 ORDER BY name ASC")
     fun getCategoriesByType(type: String): Flow<List<CategoryEntity>>
 

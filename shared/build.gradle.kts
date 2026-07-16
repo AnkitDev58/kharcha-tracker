@@ -32,6 +32,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.koin.android)
             implementation(libs.kotlinx.coroutines.android)
+            implementation(libs.datastore.preferences)
         }
         commonMain.dependencies {
             // Compose
@@ -60,7 +61,7 @@ kotlin {
             implementation(libs.sqlite.bundled)
 
             // DataStore
-            implementation(libs.datastore.preferences)
+            implementation(libs.datastore.preferences.core)
 
             // KotlinX
             implementation(libs.kotlinx.datetime)

@@ -2,38 +2,23 @@ package org.example.project.ui.navigation
 
 import kotlinx.serialization.Serializable
 
-@Serializable
-data object HomeRoute
+// ── Bottom nav destinations ────────────────────────────────────────────────────
+@Serializable data object HomeRoute
+@Serializable data class TransactionsRoute(val date: String? = null)
+@Serializable data object StatisticsRoute
+@Serializable data object BudgetRoute
+@Serializable data object GoalsRoute
 
-@Serializable
-data class TransactionsRoute(val date: String?=null)
+// ── Top-level feature screens ─────────────────────────────────────────────────
+@Serializable data object SettingsRoute
+@Serializable data object CalendarRoute
+@Serializable data object ReportsRoute
+@Serializable data object AnnualExpenseRoute
+@Serializable data object LoanRoute
+@Serializable data object InvestmentRoute
 
-@Serializable
-data object StatisticsRoute
-
-@Serializable
-data object BudgetRoute
-
-@Serializable
-data object SettingsRoute
-
-@Serializable
-data class AddEditTransactionRoute(val transactionId: Long = -1L)
-
-@Serializable
-data object AddEditCategoryRoute
-
-@Serializable
-data class CategoryDetailRoute(val categoryId: Long)
-
-@Serializable
-data object GoalsRoute
-
-@Serializable
-data class AddEditGoalRoute(val goalId: Long = -1L)
-
-@Serializable
-data object CalendarRoute
-
-@Serializable
-data object ReportsRoute
+// ── Detail / add-edit destinations ────────────────────────────────────────────
+@Serializable data class AddEditTransactionRoute(val transactionId: Long = -1L)
+@Serializable data object AddEditCategoryRoute
+@Serializable data class CategoryDetailRoute(val categoryId: Long)
+@Serializable data class AddEditGoalRoute(val goalId: Long = -1L)

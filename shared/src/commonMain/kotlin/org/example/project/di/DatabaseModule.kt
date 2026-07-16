@@ -8,4 +8,7 @@ val databaseModule = module {
     single { get<TrackerDatabase>().categoryDao() }
     single { get<TrackerDatabase>().budgetDao() }
     single { get<TrackerDatabase>().savingsGoalDao() }
+    single { get<TrackerDatabase>().annualExpenseDao() }
+    single { get<TrackerDatabase>().loanDao() }
+    single { get<TrackerDatabase>().investmentDao() }
 }
