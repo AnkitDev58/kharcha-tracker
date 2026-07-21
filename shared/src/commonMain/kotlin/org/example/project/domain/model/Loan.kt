@@ -43,4 +43,12 @@ data class Loan(
 
     val amountPaid: Double
         get() = principal - outstandingBalance
+
+
+    val pendingAmount get() = emi * remainingMonths
+
+    val isLoanComplete get() = tenureMonths == paidMonths
+
+    val totalAmount get() = emi * tenureMonths
+
 }

@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.collectLatest
 import org.example.project.core.util.CurrencyFormatter
 import org.example.project.domain.model.Loan
 import org.example.project.domain.model.LoanType
+import org.example.project.platform.logI
 import org.example.project.ui.components.*
 import org.example.project.ui.theme.*
 
@@ -40,9 +41,12 @@ fun LoanScreen(
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
             when (effect) {
-                is LoanEffect.Saved   -> { snackbar.showSnackbar("Saved"); showSheet = false }
+                is LoanEffect.Saved -> {
+                    snackbar.showSnackbar("Saved"); showSheet = false
+                }
+
                 is LoanEffect.Deleted -> snackbar.showSnackbar("Loan deleted")
-                is LoanEffect.Error   -> snackbar.showSnackbar(effect.message)
+                is LoanEffect.Error -> snackbar.showSnackbar(effect.message)
             }
         }
     }
@@ -67,7 +71,7 @@ fun LoanScreen(
         snackbarHost = { SnackbarHost(snackbar) }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -79,8 +83,10 @@ fun LoanScreen(
                     shape = RoundedCornerShape(20.dp)
                 ) {
                     Column(Modifier.padding(20.dp)) {
-                        Text("Total Debt", style = MaterialTheme.typography.labelLarge,
-                            color = Color.White.copy(0.85f))
+                        Text(
+                            "Total Debt", style = MaterialTheme.typography.labelLarge,
+                            color = Color.White.copy(0.85f)
+                        )
                         Spacer(Modifier.height(8.dp))
                         Text(
                             CurrencyFormatter.format(state.totalOutstanding),
@@ -88,20 +94,32 @@ fun LoanScreen(
                             fontWeight = FontWeight.Bold, color = Color.White
                         )
                         Spacer(Modifier.height(8.dp))
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
                             Column {
-                                Text("Total EMI / month", style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(0.75f))
-                                Text(CurrencyFormatter.format(state.totalEmi),
+                                Text(
+                                    "Total EMI / month",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color.White.copy(0.75f)
+                                )
+                                Text(
+                                    CurrencyFormatter.format(state.totalEmi),
                                     style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.SemiBold, color = Color.White)
+                                    fontWeight = FontWeight.SemiBold, color = Color.White
+                                )
                             }
                             Column(horizontalAlignment = Alignment.End) {
-                                Text("Active Loans", style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(0.75f))
-                                Text("${state.loans.size}",
+                                Text(
+                                    "Active Loans", style = MaterialTheme.typography.labelSmall,
+                                    color = Color.White.copy(0.75f)
+                                )
+                                Text(
+                                    "${state.loanSize ?: 0}",
                                     style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.SemiBold, color = Color.White)
+                                    fontWeight = FontWeight.SemiBold, color = Color.White
+                                )
                             }
                         }
                     }
@@ -110,16 +128,23 @@ fun LoanScreen(
 
             if (state.loans.isEmpty()) {
                 item {
-                    Box(Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
+                    Box(
+                        Modifier.fillMaxWidth().height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Filled.CreditCard, null,
+                            Icon(
+                                Icons.Filled.CreditCard, null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(48.dp))
+                                modifier = Modifier.size(48.dp)
+                            )
                             Spacer(Modifier.height(8.dp))
                             Text("No loans added", style = MaterialTheme.typography.titleMedium)
-                            Text("Tap + to track a loan or credit card",
+                            Text(
+                                "Tap + to track a loan or credit card",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
@@ -144,6 +169,7 @@ fun LoanScreen(
             onDismiss = { showSheet = false },
             onSave = { id, name, principal, outstanding, rate, tenure, paid, type, notes ->
                 viewModel.save(id, name, principal, outstanding, rate, tenure, paid, type, notes)
+                showSheet = false
             }
         )
     }
@@ -164,32 +190,44 @@ private fun LoanItem(
                         .background(MaterialTheme.colorScheme.errorContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Filled.CreditCard, null,
+                    Icon(
+                        Icons.Filled.CreditCard, null,
                         tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(22.dp))
+                        modifier = Modifier.size(22.dp)
+                    )
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(loan.name, style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold)
-                        Text(CurrencyFormatter.format(loan.outstandingBalance),
+                        Text(
+                            loan.name, style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = if (loan.isLoanComplete) CurrencyFormatter.format(loan.totalAmount) else CurrencyFormatter.format(
+                                loan.outstandingBalance
+                            ),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.error)
+                            color = if (loan.isLoanComplete) ProgressGreen else MaterialTheme.colorScheme.error
+                        )
                     }
                     Spacer(Modifier.height(2.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         LoanChip(loan.loanType.label)
-                        Text("${loan.interestRatePercent}% p.a.",
+                        Text(
+                            "${loan.interestRatePercent}% p.a.",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Filled.Delete, "Delete",
+                    Icon(
+                        Icons.Filled.Delete, "Delete",
                         tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(18.dp))
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
             }
 
@@ -197,12 +235,16 @@ private fun LoanItem(
 
             // Progress bar: paid / tenure
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("${loan.paidMonths} / ${loan.tenureMonths} months paid",
+                Text(
+                    "${loan.paidMonths} / ${loan.tenureMonths} months paid",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("EMI: ${CurrencyFormatter.format(loan.emi)}",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    "EMI: ${CurrencyFormatter.format(loan.emi)}",
                     style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.SemiBold)
+                    fontWeight = FontWeight.SemiBold
+                )
             }
             Spacer(Modifier.height(4.dp))
             AnimatedLinearProgress(
@@ -215,26 +257,43 @@ private fun LoanItem(
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Column {
-                    Text("Remaining", style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("${loan.remainingMonths} months",
+                    Text(
+                        "Remaining", style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        "${loan.remainingMonths} months",
                         style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.SemiBold)
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("Total Interest", style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(CurrencyFormatter.format(loan.totalInterest),
+                    Text(
+                        "Total Interest", style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        CurrencyFormatter.format(loan.totalInterest),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.error)
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
                 OutlinedButton(
-                    onClick = onMarkPaid,
+                    onClick = {
+                        if (!loan.isLoanComplete) {
+                            onMarkPaid()
+                        }
+                    },
                     modifier = Modifier.height(32.dp),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 12.dp)
-                ) { Text("Mark EMI Paid", style = MaterialTheme.typography.labelSmall) }
+                ) {
+                    Text(
+                        if (loan.isLoanComplete) "All EMI Paid" else "Mark EMI Paid",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
             }
         }
     }
@@ -246,10 +305,12 @@ private fun LoanChip(label: String) {
         shape = RoundedCornerShape(6.dp),
         color = MaterialTheme.colorScheme.errorContainer
     ) {
-        Text(label,
+        Text(
+            label,
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onErrorContainer)
+            color = MaterialTheme.colorScheme.onErrorContainer
+        )
     }
 }
 
@@ -260,15 +321,20 @@ private fun AddEditLoanSheet(
     onDismiss: () -> Unit,
     onSave: (Long, String, Double, Double, Double, Int, Int, LoanType, String) -> Unit
 ) {
-    var name        by remember(initial) { mutableStateOf(initial?.name ?: "") }
-    var principal   by remember(initial) { mutableStateOf(initial?.principal?.toString() ?: "") }
-    var outstanding by remember(initial) { mutableStateOf(initial?.outstandingBalance?.toString() ?: "") }
-    var rate        by remember(initial) { mutableStateOf(initial?.interestRatePercent?.toString() ?: "") }
-    var tenure      by remember(initial) { mutableStateOf(initial?.tenureMonths?.toString() ?: "") }
-    var paid        by remember(initial) { mutableStateOf(initial?.paidMonths?.toString() ?: "0") }
-    var loanType    by remember(initial) { mutableStateOf(initial?.loanType ?: LoanType.PERSONAL) }
-    var notes       by remember(initial) { mutableStateOf(initial?.notes ?: "") }
+    var name by remember(initial) { mutableStateOf(initial?.name ?: "") }
+    var principal by remember(initial) { mutableStateOf(initial?.principal?.toString() ?: "") }
+    var outstanding by remember(initial) {
+        mutableStateOf(
+            initial?.outstandingBalance?.toString() ?: ""
+        )
+    }
+    var rate by remember(initial) { mutableStateOf(initial?.interestRatePercent?.toString() ?: "") }
+    var tenure by remember(initial) { mutableStateOf(initial?.tenureMonths?.toString() ?: "") }
+    var paid by remember(initial) { mutableStateOf(initial?.paidMonths?.toString() ?: "0") }
+    var loanType by remember(initial) { mutableStateOf(initial?.loanType ?: LoanType.PERSONAL) }
+    var notes by remember(initial) { mutableStateOf(initial?.notes ?: "") }
     var typeExpanded by remember { mutableStateOf(false) }
+
 
     // Auto-fill outstanding = principal when adding new
     LaunchedEffect(principal) {
@@ -287,49 +353,111 @@ private fun AddEditLoanSheet(
                 style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold
             )
 
-            OutlinedTextField(name, { name = it }, label = { Text("Loan Name") },
-                modifier = Modifier.fillMaxWidth(), singleLine = true)
+            OutlinedTextField(
+                name, { name = it }, label = { Text("Loan Name") },
+                modifier = Modifier.fillMaxWidth(), singleLine = true
+            )
 
             // Loan type dropdown
-            ExposedDropdownMenuBox(expanded = typeExpanded, onExpandedChange = { typeExpanded = it }) {
+            ExposedDropdownMenuBox(
+                expanded = typeExpanded,
+                onExpandedChange = { typeExpanded = it }) {
                 OutlinedTextField(
                     value = loanType.label, onValueChange = {}, readOnly = true,
                     label = { Text("Loan Type") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(typeExpanded) },
                     modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
-                ExposedDropdownMenu(expanded = typeExpanded, onDismissRequest = { typeExpanded = false }) {
+                ExposedDropdownMenu(
+                    expanded = typeExpanded,
+                    onDismissRequest = { typeExpanded = false }) {
                     LoanType.entries.forEach { t ->
-                        DropdownMenuItem(text = { Text(t.label) },
+                        DropdownMenuItem(
+                            text = { Text(t.label) },
                             onClick = { loanType = t; typeExpanded = false })
                     }
                 }
             }
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(principal, { principal = it.filter { c -> c.isDigit() || c == '.' } },
-                    label = { Text("Principal (₹)") }, modifier = Modifier.weight(1f), singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
-                OutlinedTextField(outstanding, { outstanding = it.filter { c -> c.isDigit() || c == '.' } },
-                    label = { Text("Outstanding (₹)") }, modifier = Modifier.weight(1f), singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                OutlinedTextField(
+                    principal,
+                    { principal = it.filter { c -> c.isDigit() || c == '.' } },
+                    label = { Text("Principal (₹)") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                )
+                OutlinedTextField(
+                    rate,
+                    { rate = it.filter { c -> c.isDigit() || c == '.' } },
+                    label = { Text("Rate % p.a.") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                )
             }
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(rate, { rate = it.filter { c -> c.isDigit() || c == '.' } },
-                    label = { Text("Rate % p.a.") }, modifier = Modifier.weight(1f), singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
-                OutlinedTextField(tenure, { tenure = it.filter { c -> c.isDigit() } },
-                    label = { Text("Tenure (months)") }, modifier = Modifier.weight(1f), singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                OutlinedTextField(
+                    tenure,
+                    { tenure = it.filter { c -> c.isDigit() } },
+                    label = { Text("Tenure (months)") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+                OutlinedTextField(
+                    paid,
+                    { paid = it.filter { c -> c.isDigit() } },
+                    label = { Text("EMIs Already Paid") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
             }
 
-            OutlinedTextField(paid, { paid = it.filter { c -> c.isDigit() } },
-                label = { Text("EMIs Already Paid") }, modifier = Modifier.fillMaxWidth(),
-                singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+            val previewOutStanding = run {
+                val p = principal.toDoubleOrNull() ?: return@run null
+                val r = rate.toDoubleOrNull() ?: return@run null
+                val n = tenure.toIntOrNull() ?: return@run null
+                val paidMonths = paid.toIntOrNull() ?: return@run null
+                if (p > 0 && n > 0) {
+                    val loan = Loan(
+                        id = 0,
+                        name = "",
+                        principal = p,
+                        outstandingBalance = p,
+                        interestRatePercent = r,
+                        tenureMonths = n,
+                        paidMonths = paidMonths,
+                        ""
+                    )
+                    loan.pendingAmount
+                } else null
+            }
 
-            OutlinedTextField(notes, { notes = it }, label = { Text("Notes (optional)") },
-                modifier = Modifier.fillMaxWidth(), singleLine = true)
+
+            previewOutStanding?.logI("check dataa  $previewOutStanding")
+
+            LaunchedEffect(previewOutStanding) {
+                outstanding = previewOutStanding.toString()
+            }
+
+
+            OutlinedTextField(
+                outstanding,
+                { outstanding = it.filter { c -> c.isDigit() || c == '.' } },
+                label = { Text("Outstanding (₹)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+            )
+
+            OutlinedTextField(
+                notes, { notes = it }, label = { Text("Notes (optional)") },
+                modifier = Modifier.fillMaxWidth(), singleLine = true
+            )
 
             // Live EMI preview
             val previewEmi = run {

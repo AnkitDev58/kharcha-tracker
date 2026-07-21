@@ -85,12 +85,10 @@ class SeedDataManager(
 
 
     private suspend fun seedTransactions() {
-        if (categoryRepository.getCategoryCount() > 0) {
-            return
+        if (categoryRepository.getCategoryCount() <= 0) {
+            categoryRepository.insertCategories(DefaultCategories.all)
+
         }
-
-        categoryRepository.insertCategories(DefaultCategories.all)
-
         return
         val categories = categoryRepository.getAllCategories().first()
 

@@ -15,7 +15,8 @@ data class LoanUiState(
     val loans: List<Loan> = emptyList(),
     val totalOutstanding: Double = 0.0,
     val totalEmi: Double = 0.0,
-    val error: String? = null
+    val error: String? = null,
+    val loanSize: Int? = 0
 )
 
 sealed interface LoanEffect {
@@ -44,8 +45,9 @@ class LoanViewModel(
                     it.copy(
                         isLoading = false,
                         loans = list,
+                        loanSize = list.count { !it.isLoanComplete },
                         totalOutstanding = list.sumOf { l -> l.outstandingBalance },
-                        totalEmi = list.sumOf { l -> l.emi }
+                        totalEmi = list.sumOf { l -> if (l.isLoanComplete) 0.0 else l.emi }
                     )
                 }
             }
@@ -74,7 +76,7 @@ class LoanViewModel(
                 )
                 if (id == 0L) addLoan(loan) else updateLoan(loan)
             }.onSuccess { _effect.send(LoanEffect.Saved) }
-             .onFailure { _effect.send(LoanEffect.Error(it.message ?: "Failed")) }
+                .onFailure { _effect.send(LoanEffect.Error(it.message ?: "Failed")) }
         }
     }
 
@@ -82,7 +84,14 @@ class LoanViewModel(
         viewModelScope.launch {
             val newPaid = (loan.paidMonths + 1).coerceAtMost(loan.tenureMonths)
             val newOutstanding = (loan.outstandingBalance - loan.emi).coerceAtLeast(0.0)
-            runCatching { updateLoan(loan.copy(paidMonths = newPaid, outstandingBalance = newOutstanding)) }
+            runCatching {
+                updateLoan(
+                    loan.copy(
+                        paidMonths = newPaid,
+                        outstandingBalance = newOutstanding
+                    )
+                )
+            }
                 .onSuccess { _effect.send(LoanEffect.Saved) }
                 .onFailure { _effect.send(LoanEffect.Error(it.message ?: "Failed")) }
         }

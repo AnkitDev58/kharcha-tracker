@@ -1,5 +1,7 @@
 package org.example.project.core.util
 
+import kotlin.math.roundToInt
+
 object CurrencyFormatter {
     fun format(amount: Double, symbol: String = "₹"): String {
         return DateTimeUtils.formatAmount(amount, symbol)
@@ -19,5 +21,10 @@ object CurrencyFormatter {
         val intPart = rounded.toLong()
         val decPart = kotlin.math.round((rounded - intPart) * 10).toLong()
         return if (decPart == 0L) "$intPart" else "$intPart.$decPart"
+    }
+
+
+    fun Double.format(): String {
+        return ((this * 10).roundToInt() / 10.0).toString()
     }
 }

@@ -1,7 +1,6 @@
 package org.example.project.database.entity
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room3.*
 
 @Entity(tableName = "loans")
 data class LoanEntity(

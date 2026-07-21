@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -27,12 +27,28 @@ kotlin {
         }
     }
 
+    jvm()
+
+    js {
+        browser()
+    }
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+    }
+
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.koin.android)
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.datastore.preferences)
+
+            // Room
+//            implementation(libs.room.runtime)
+            implementation(libs.sqlite.bundled)
         }
         commonMain.dependencies {
             // Compose
@@ -56,20 +72,44 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.composeViewModel)
 
-            // Room
-            implementation(libs.room.runtime)
-            implementation(libs.sqlite.bundled)
 
             // DataStore
-            implementation(libs.datastore.preferences.core)
+//            implementation(libs.datastore.preferences.core)
+            implementation("androidx.datastore:datastore-preferences-core:1.3.0-alpha09")
+
 
             // KotlinX
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines.core)
+
+            implementation(libs.room.runtime)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+        }
+         jsMain.dependencies {
+            implementation(libs.wrappers.browser)
+            implementation(libs.sqliteWeb)
+            implementation(npm("sql.js", "1.13.0"))
+
+        }
+
+        webMain.dependencies {
+            implementation(libs.sqliteWeb)
+            implementation(npm("sql.js", "1.13.0"))
+
+        }
+        wasmJsMain.dependencies {
+            implementation(libs.sqliteWeb)
+            implementation(npm("sql.js", "1.13.0"))
+         }
+        iosMain.dependencies {
+
+            implementation(libs.sqlite.bundled)
+        }
+        jvmMain.dependencies {
+            implementation(libs.sqlite.bundled)
         }
     }
 
@@ -78,14 +118,27 @@ kotlin {
     }
 }
 
-room {
+
+
+room3 {
     schemaDirectory("$projectDir/schemas")
 }
-
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
     // Room KSP for all targets
+//    add("kspAndroid", libs.room.compiler)
+//    add("kspIosArm64", libs.room.compiler)
+//    add("kspIosSimulatorArm64", libs.room.compiler)
+//    add("kspJvm", libs.room.compiler)
+//    ksp("androidx.room3:room3-compiler:3.0.0")
+
     add("kspAndroid", libs.room.compiler)
+
     add("kspIosArm64", libs.room.compiler)
     add("kspIosSimulatorArm64", libs.room.compiler)
+
+    add("kspJvm", libs.room.compiler)
+
+    add("kspJs", libs.room.compiler)
+    add("kspWasmJs", libs.room.compiler)
 }

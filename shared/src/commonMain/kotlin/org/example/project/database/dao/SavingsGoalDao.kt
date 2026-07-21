@@ -1,6 +1,6 @@
 package org.example.project.database.dao
 
-import androidx.room.*
+import androidx.room3.*
 import kotlinx.coroutines.flow.Flow
 import org.example.project.database.entity.SavingsGoalEntity
 

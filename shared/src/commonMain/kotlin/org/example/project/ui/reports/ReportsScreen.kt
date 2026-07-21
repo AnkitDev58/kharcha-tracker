@@ -71,7 +71,7 @@ fun ReportsScreen(
             }
             else -> ReportContent(
                 report = state.report!!,
-                modifier = Modifier.padding(padding)
+                modifier = Modifier.padding(top = padding.calculateTopPadding())
             )
         }
     }

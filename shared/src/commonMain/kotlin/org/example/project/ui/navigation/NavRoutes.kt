@@ -2,6 +2,10 @@ package org.example.project.ui.navigation
 
 import kotlinx.serialization.Serializable
 
+// ── Auth destinations ──────────────────────────────────────────────────────────
+@Serializable data object LoginRoute
+@Serializable data class OtpRoute(val identifier: String)
+
 // ── Bottom nav destinations ────────────────────────────────────────────────────
 @Serializable data object HomeRoute
 @Serializable data class TransactionsRoute(val date: String? = null)

@@ -1,9 +1,6 @@
 package org.example.project.database.entity
 
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
-import androidx.room.PrimaryKey
+import androidx.room3.*
 
 @Entity(
     tableName = "transactions",

@@ -1,9 +1,9 @@
 package org.example.project.database
 
-import androidx.room.AutoMigration
-import androidx.room.ConstructedBy
-import androidx.room.Database
-import androidx.room.RoomDatabase
+import androidx.room3.AutoMigration
+import androidx.room3.ConstructedBy
+import androidx.room3.Database
+import androidx.room3.RoomDatabase
 import org.example.project.database.dao.AnnualExpenseDao
 import org.example.project.database.dao.BudgetDao
 import org.example.project.database.dao.CategoryDao

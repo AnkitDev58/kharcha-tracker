@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
@@ -21,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -28,6 +30,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import org.example.project.ui.addtransaction.AddEditTransactionScreen
 import org.example.project.ui.annualexpense.AnnualExpenseScreen
+import org.example.project.ui.auth.LoginScreen
+import org.example.project.ui.auth.OtpScreen
 import org.example.project.ui.budget.BudgetScreen
 import org.example.project.ui.calendar.CalendarScreen
 import org.example.project.ui.goals.GoalsScreen
@@ -47,11 +51,11 @@ data class BottomNavItem(
 )
 
 val bottomNavItems = listOf(
-    BottomNavItem("Home",         Icons.Filled.Home,           HomeRoute),
-    BottomNavItem("Transactions", Icons.Filled.Receipt,        TransactionsRoute()),
-    BottomNavItem("Statistics",   Icons.Filled.BarChart,       StatisticsRoute),
-    BottomNavItem("Budget",       Icons.Filled.AccountBalance, BudgetRoute),
-    BottomNavItem("Goals",        Icons.Filled.Savings,        GoalsRoute)
+    BottomNavItem("Home", Icons.Filled.Home, HomeRoute),
+    BottomNavItem("Transactions", Icons.Filled.Receipt, TransactionsRoute()),
+    BottomNavItem("Statistics", Icons.Filled.BarChart, StatisticsRoute),
+    BottomNavItem("Budget", Icons.Filled.AccountBalance, BudgetRoute),
+    BottomNavItem("Goals", Icons.Filled.Savings, GoalsRoute)
 )
 
 /** Routes that should show the bottom navigation bar. */
@@ -105,12 +109,14 @@ fun MainNavigation() {
                     }
                 }
             }
-        }
+        }, modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = HomeRoute,
-            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = if (showBottomBar) innerPadding.calculateBottomPadding() else 0.dp),
             enterTransition = {
                 fadeIn(tween(300)) + scaleIn(initialScale = 0.96f, animationSpec = tween(300))
             },
@@ -119,6 +125,30 @@ fun MainNavigation() {
             }
         ) {
 
+            // ── Auth screens ───────────────────────────────────────────────────
+
+            composable<LoginRoute> {
+                LoginScreen(
+                    onSendOtp = { identifier ->
+                        navController.navigate(OtpRoute(identifier))
+                    }
+                )
+            }
+
+            composable<OtpRoute> { backStackEntry ->
+                val route: OtpRoute = backStackEntry.toRoute()
+                OtpScreen(
+                    identifier = route.identifier,
+                    onVerifyOtp = {
+                        navController.navigate(HomeRoute) {
+                            popUpTo(LoginRoute) { inclusive = true }
+                        }
+                    },
+                    onResendOtp = { /* Handle resend */ },
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
             // ── Bottom nav screens ─────────────────────────────────────────────
 
             composable<HomeRoute> {
@@ -126,12 +156,12 @@ fun MainNavigation() {
                     viewModel = koinViewModel(),
                     onAddTransactionClick = { navController.navigate(AddEditTransactionRoute()) },
                     onTransactionClick = { id -> navController.navigate(AddEditTransactionRoute(id)) },
-                    onNavigateToCalendar    = { navController.navigate(CalendarRoute) },
-                    onNavigateToReports     = { navController.navigate(ReportsRoute) },
+                    onNavigateToCalendar = { navController.navigate(CalendarRoute) },
+                    onNavigateToReports = { navController.navigate(ReportsRoute) },
                     onNavigateToAnnualBills = { navController.navigate(AnnualExpenseRoute) },
-                    onNavigateToLoans       = { navController.navigate(LoanRoute) },
+                    onNavigateToLoans = { navController.navigate(LoanRoute) },
                     onNavigateToInvestments = { navController.navigate(InvestmentRoute) },
-                    onNavigateToSettings    = { navController.navigate(SettingsRoute) }
+                    onNavigateToSettings = { navController.navigate(SettingsRoute) }
                 )
             }
 
