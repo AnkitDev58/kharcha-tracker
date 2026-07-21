@@ -36,9 +36,14 @@ kotlin {
             webpackTask {
                 mainOutputFileName = "app.js"
             }
+            commonWebpackConfig {
+                mode = org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig.Mode.DEVELOPMENT
+            }
         }
         binaries.executable()
     }
+
+
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
