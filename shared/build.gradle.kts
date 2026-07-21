@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
+import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrLink
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -29,8 +31,13 @@ kotlin {
 
     jvm()
 
-    js {
-        browser()
+    this.js {
+        browser {
+            webpackTask {
+                mainOutputFileName = "app.js"
+            }
+        }
+        binaries.executable()
     }
 
     @OptIn(ExperimentalWasmDsl::class)
@@ -118,7 +125,11 @@ kotlin {
     }
 }
 
-
+tasks.withType<KotlinJsIrLink>().configureEach {
+    compilerOptions {
+        sourceMap.set(false)
+    }
+}
 
 room3 {
     schemaDirectory("$projectDir/schemas")

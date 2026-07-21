@@ -7,8 +7,12 @@ plugins {
 }
 
 kotlin {
-    js {
-        browser()
+    this.js {
+        browser {
+            webpackTask {
+                mainOutputFileName = "app.js"
+            }
+        }
         binaries.executable()
     }
 
@@ -33,13 +37,5 @@ kotlin {
 
         }
 
-//        val webMain by creating {
-//            dependsOn(commonMain.get())
-//            dependencies {
-//
-//            }
-//        }
-//        jsMain.get().dependsOn(webMain)
-//        wasmJsMain.get().dependsOn(webMain)
     }
 }
