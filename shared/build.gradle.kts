@@ -34,7 +34,7 @@ kotlin {
     this.js {
         browser {
             webpackTask {
-                mainOutputFileName = "app.js"
+                mainOutputFileName = "webApp.js"
             }
             commonWebpackConfig {
                 mode = org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig.Mode.DEVELOPMENT

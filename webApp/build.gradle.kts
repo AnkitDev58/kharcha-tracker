@@ -10,7 +10,7 @@ kotlin {
     this.js {
         browser {
             webpackTask {
-                mainOutputFileName = "app.js"
+                mainOutputFileName = "webApp.js"
                 sourceMaps =false
             }
             commonWebpackConfig {
