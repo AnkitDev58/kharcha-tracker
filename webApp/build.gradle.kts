@@ -11,6 +11,7 @@ kotlin {
         browser {
             webpackTask {
                 mainOutputFileName = "app.js"
+                sourceMaps =false
             }
         }
         binaries.executable()

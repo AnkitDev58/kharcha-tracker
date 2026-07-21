@@ -35,8 +35,34 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
+      - name: Start resource monitor
+        run: |
+          ( while true; do
+              echo "===== $(date '+%H:%M:%S') ====="
+              free -h
+              echo "--- top node/java processes ---"
+              ps -eo pid,pcpu,pmem,etime,cmd --sort=-pcpu | grep -E 'node|java' | grep -v grep | head -10
+              sleep 30
+            done ) &
+          echo $! > monitor.pid
+
       - name: Build Web
-        run: ./gradlew jsBrowserDistribution
+        timeout-minutes: 25
+        env:
+          ORG_GRADLE_PROJECT_kotlin_js_webpack_log_level: info
+          NODE_OPTIONS: "--max-old-space-size=4096"
+        run: ./gradlew jsBrowserDistribution --info
+
+      - name: Stop resource monitor
+        if: always()
+        run: kill $(cat monitor.pid) || true
+
+      - name: Show final process/disk state
+        if: always()
+        run: |
+          ps -ef
+          free -h
+          df -h
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
