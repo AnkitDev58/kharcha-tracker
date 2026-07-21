@@ -47,7 +47,7 @@ jobs:
           echo $! > monitor.pid
 
       - name: Build Web
-        timeout-minutes: 25
+        timeout-minutes: 30
         env:
           ORG_GRADLE_PROJECT_kotlin_js_webpack_log_level: info
           NODE_OPTIONS: "--max-old-space-size=4096"
@@ -64,13 +64,18 @@ jobs:
           free -h
           df -h
 
+      - name: Verify dist output exists
+        run: |
+          echo "Contents of webApp/build/dist:"
+          find webApp/build/dist -type d
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: composeApp/build/dist/js/productionExecutable
+          path: webApp/build/dist/js/productionExecutable
 
   deploy:
     needs: build
