@@ -7,6 +7,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.EventNote
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,6 +26,7 @@ import org.example.project.domain.model.CategorySummary
 import org.example.project.domain.model.FinancialSummary
 import org.example.project.domain.model.InsightItem
 import org.example.project.domain.model.InsightType
+import org.example.project.domain.model.Transaction
 import org.example.project.ui.components.*
 import org.example.project.ui.theme.*
 
@@ -41,120 +45,240 @@ fun HomeScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Kharcha Tracker", fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                actions = {
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Filled.Settings, "Settings")
+    AdaptiveContent { sizeClass ->
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Kharcha Tracker", fontWeight = FontWeight.Bold) },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    actions = {
+                        IconButton(onClick = onNavigateToSettings) {
+                            Icon(Icons.Filled.Settings, "Settings")
+                        }
                     }
+                )
+            },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = onAddTransactionClick,
+                    containerColor = PrimaryPurple
+                ) {
+                    Icon(Icons.Filled.Add, "Add Transaction", tint = Color.White)
                 }
+            }
+        ) { padding ->
+            if (state.isLoading) {
+                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                HomeScreenResponsiveContent(
+                    state = state,
+                    sizeClass = sizeClass,
+                    padding = padding,
+                    onTransactionClick = onTransactionClick,
+                    onNavigateToCalendar = onNavigateToCalendar,
+                    onNavigateToReports = onNavigateToReports,
+                    onNavigateToAnnualBills = onNavigateToAnnualBills,
+                    onNavigateToLoans = onNavigateToLoans,
+                    onNavigateToInvestments = onNavigateToInvestments
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HomeScreenResponsiveContent(
+    state: HomeUiState,
+    sizeClass: WindowSizeClass,
+    padding: PaddingValues,
+    onTransactionClick: (Long) -> Unit,
+    onNavigateToCalendar: () -> Unit,
+    onNavigateToReports: () -> Unit,
+    onNavigateToAnnualBills: () -> Unit,
+    onNavigateToLoans: () -> Unit,
+    onNavigateToInvestments: () -> Unit
+) {
+    if (sizeClass == WindowSizeClass.COMPACT) {
+        HomeScreenCompact(
+            state = state,
+            padding = padding,
+            onTransactionClick = onTransactionClick,
+            onNavigateToCalendar = onNavigateToCalendar,
+            onNavigateToReports = onNavigateToReports,
+            onNavigateToAnnualBills = onNavigateToAnnualBills,
+            onNavigateToLoans = onNavigateToLoans,
+            onNavigateToInvestments = onNavigateToInvestments
+        )
+    } else {
+        HomeScreenExpanded(
+            state = state,
+            padding = padding,
+            onTransactionClick = onTransactionClick,
+            onNavigateToCalendar = onNavigateToCalendar,
+            onNavigateToReports = onNavigateToReports,
+            onNavigateToAnnualBills = onNavigateToAnnualBills,
+            onNavigateToLoans = onNavigateToLoans,
+            onNavigateToInvestments = onNavigateToInvestments
+        )
+    }
+}
+
+@Composable
+private fun HomeScreenCompact(
+    state: HomeUiState,
+    padding: PaddingValues,
+    onTransactionClick: (Long) -> Unit,
+    onNavigateToCalendar: () -> Unit,
+    onNavigateToReports: () -> Unit,
+    onNavigateToAnnualBills: () -> Unit,
+    onNavigateToLoans: () -> Unit,
+    onNavigateToInvestments: () -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item { BalanceCard(state.summary.balance) }
+        item { MiniCardsRow(state.summary) }
+        item {
+            QuickAccessGrid(
+                onCalendar = onNavigateToCalendar,
+                onReports = onNavigateToReports,
+                onAnnualBills = onNavigateToAnnualBills,
+                onLoans = onNavigateToLoans,
+                onInvestments = onNavigateToInvestments
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddTransactionClick,
-                containerColor = PrimaryPurple
-            ) {
-                Icon(Icons.Filled.Add, "Add Transaction", tint = Color.White)
+        }
+        if (state.summary.monthlyBudget > 0) {
+            item { BudgetCard(state.summary) }
+        }
+        if (state.insights.isNotEmpty()) {
+            item { InsightsCard(state.insights) }
+        }
+        if (state.categorySummaries.isNotEmpty()) {
+            item { CategoryBreakdownCard(state.categorySummaries.take(5)) }
+        }
+        item {
+            Text(
+                "Recent Transactions",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        items(state.recentTransactions) { tx ->
+            TransactionItem(
+                transaction = tx,
+                onClick = { onTransactionClick(tx.id) }
+            )
+        }
+        item { Spacer(Modifier.height(80.dp)) }
+    }
+}
+
+@Composable
+private fun HomeScreenExpanded(
+    state: HomeUiState,
+    padding: PaddingValues,
+    onTransactionClick: (Long) -> Unit,
+    onNavigateToCalendar: () -> Unit,
+    onNavigateToReports: () -> Unit,
+    onNavigateToAnnualBills: () -> Unit,
+    onNavigateToLoans: () -> Unit,
+    onNavigateToInvestments: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = padding.calculateTopPadding())
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        // Left Column: Overview and Budget
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 80.dp)
+        ) {
+            item { BalanceCard(state.summary.balance) }
+            item { MiniCardsRow(state.summary) }
+            if (state.summary.monthlyBudget > 0) {
+                item { BudgetCard(state.summary) }
+            }
+            if (state.insights.isNotEmpty()) {
+                item { InsightsCard(state.insights) }
             }
         }
-    ) { padding ->
-        if (state.isLoading) {
-            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+
+        // Right Column: Tools and Details
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 80.dp)
+        ) {
+            item {
+                QuickAccessGrid(
+                    onCalendar = onNavigateToCalendar,
+                    onReports = onNavigateToReports,
+                    onAnnualBills = onNavigateToAnnualBills,
+                    onLoans = onNavigateToLoans,
+                    onInvestments = onNavigateToInvestments
+                )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Balance Card
-                item { BalanceCard(state.summary.balance) }
-
-                // Income / Expense / Savings mini cards
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        SummaryMiniCard(
-                            label = "Income",
-                            amount = CurrencyFormatter.formatCompact(state.summary.totalIncome),
-                            icon = Icons.Filled.TrendingUp,
-                            gradientStart = GradientIncomeStart,
-                            gradientEnd = GradientIncomeEnd,
-                            modifier = Modifier.weight(1f)
-                        )
-                        SummaryMiniCard(
-                            label = "Expense",
-                            amount = CurrencyFormatter.formatCompact(state.summary.totalExpense),
-                            icon = Icons.Filled.TrendingDown,
-                            gradientStart = GradientExpenseStart,
-                            gradientEnd = GradientExpenseEnd,
-                            modifier = Modifier.weight(1f)
-                        )
-                        SummaryMiniCard(
-                            label = "Savings",
-                            amount = CurrencyFormatter.formatCompact(state.summary.totalSavings),
-                            icon = Icons.Filled.Savings,
-                            gradientStart = GradientSavingsStart,
-                            gradientEnd = GradientSavingsEnd,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-
-                // Quick-access feature grid
-                item {
-                    QuickAccessGrid(
-                        onCalendar    = onNavigateToCalendar,
-                        onReports     = onNavigateToReports,
-                        onAnnualBills = onNavigateToAnnualBills,
-                        onLoans       = onNavigateToLoans,
-                        onInvestments = onNavigateToInvestments
-                    )
-                }
-
-                // Monthly Budget progress
-                if (state.summary.monthlyBudget > 0) {
-                    item { BudgetCard(state.summary) }
-                }
-
-                // Insights
-                if (state.insights.isNotEmpty()) {
-                    item { InsightsCard(state.insights) }
-                }
-
-                // Category breakdown
-                if (state.categorySummaries.isNotEmpty()) {
-                    item { CategoryBreakdownCard(state.categorySummaries.take(5)) }
-                }
-
-                // Recent Transactions header
-                item {
-                    Text(
-                        "Recent Transactions",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                items(state.recentTransactions) { tx ->
-                    TransactionItem(
-                        transaction = tx,
-                        onClick = { onTransactionClick(tx.id) }
-                    )
-                }
-
-                item { Spacer(Modifier.height(80.dp)) }
+            if (state.categorySummaries.isNotEmpty()) {
+                item { CategoryBreakdownCard(state.categorySummaries.take(5)) }
+            }
+            item {
+                Text(
+                    "Recent Transactions",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            items(state.recentTransactions) { tx ->
+                TransactionItem(
+                    transaction = tx,
+                    onClick = { onTransactionClick(tx.id) }
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun MiniCardsRow(summary: FinancialSummary) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        SummaryMiniCard(
+            label = "Income",
+            amount = CurrencyFormatter.formatCompact(summary.totalIncome),
+            icon = Icons.AutoMirrored.Filled.TrendingUp,
+            gradientStart = GradientIncomeStart,
+            gradientEnd = GradientIncomeEnd,
+            modifier = Modifier.weight(1f)
+        )
+        SummaryMiniCard(
+            label = "Expense",
+            amount = CurrencyFormatter.formatCompact(summary.totalExpense),
+            icon = Icons.AutoMirrored.Filled.TrendingDown,
+            gradientStart = GradientExpenseStart,
+            gradientEnd = GradientExpenseEnd,
+            modifier = Modifier.weight(1f)
+        )
+        SummaryMiniCard(
+            label = "Savings",
+            amount = CurrencyFormatter.formatCompact(summary.totalSavings),
+            icon = Icons.Filled.Savings,
+            gradientStart = GradientSavingsStart,
+            gradientEnd = GradientSavingsEnd,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
@@ -224,7 +348,7 @@ private fun QuickAccessGrid(
                 onClick = onReports
             )
             QuickAccessItem(
-                icon = Icons.Filled.EventNote,
+                icon = Icons.AutoMirrored.Filled.EventNote,
                 label = "Bills",
                 tint = Color(0xFF7030A0),
                 onClick = onAnnualBills
@@ -236,7 +360,7 @@ private fun QuickAccessGrid(
                 onClick = onLoans
             )
             QuickAccessItem(
-                icon = Icons.Filled.TrendingUp,
+                icon = Icons.AutoMirrored.Filled.TrendingUp,
                 label = "Invest",
                 tint = Color(0xFF00B894),
                 onClick = onInvestments

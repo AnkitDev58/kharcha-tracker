@@ -44,7 +44,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.todayIn
 import org.example.project.core.util.ClockSystem
 import org.example.project.core.util.CurrencyFormatter
@@ -73,7 +75,7 @@ fun BudgetScreen(viewModel: BudgetViewModel) {
                     Column {
                         Text("Budget")
                         Text(
-                            "${DateTimeUtils.monthName(today.monthNumber)} ${today.year}",
+                            "${DateTimeUtils.monthName(today.month.number)} ${today.year}",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -135,7 +137,7 @@ fun BudgetScreen(viewModel: BudgetViewModel) {
             categories = state.expenseCategories,
             onDismiss = { showAddSheet = false },
             onSave = { categoryId, amount ->
-                viewModel.saveBudget(categoryId, amount, today.monthNumber, today.year)
+                viewModel.saveBudget(categoryId, amount, today.month.number, today.year)
                 showAddSheet = false
             }
         )

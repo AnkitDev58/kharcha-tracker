@@ -13,6 +13,7 @@ import org.example.project.core.util.DateTimeUtils
 import org.example.project.domain.model.TransactionType
 import org.example.project.domain.repository.TransactionRepository
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.todayIn
 
 data class DaySummary(
@@ -39,22 +40,22 @@ class CalendarViewModel(
 
     init {
         val today = ClockSystem.todayIn(TimeZone.currentSystemDefault())
-        _uiState.update { it.copy(year = today.year, month = today.monthNumber) }
-        loadMonth(today.year, today.monthNumber)
+        _uiState.update { it.copy(year = today.year, month = today.month.number) }
+        loadMonth(today.year, today.month.number)
     }
 
     fun previousMonth() {
         val s = _uiState.value
         val d = LocalDate(s.year, s.month, 1).minus(1, DateTimeUnit.MONTH)
-        _uiState.update { it.copy(year = d.year, month = d.monthNumber, selectedDay = null) }
-        loadMonth(d.year, d.monthNumber)
+        _uiState.update { it.copy(year = d.year, month = d.month.number, selectedDay = null) }
+        loadMonth(d.year, d.month.number)
     }
 
     fun nextMonth() {
         val s = _uiState.value
         val d = LocalDate(s.year, s.month, 1).plus(1, DateTimeUnit.MONTH)
-        _uiState.update { it.copy(year = d.year, month = d.monthNumber, selectedDay = null) }
-        loadMonth(d.year, d.monthNumber)
+        _uiState.update { it.copy(year = d.year, month = d.month.number, selectedDay = null) }
+        loadMonth(d.year, d.month.number)
     }
 
     fun selectDay(day: Int) {
@@ -71,7 +72,7 @@ class CalendarViewModel(
                 .collect { transactions ->
                     // Group by day of month, compute income/expense per day
                     val map = mutableMapOf<Int, DaySummary>()
-                    transactions.groupBy { it.dateTime.dayOfMonth }.forEach { (day, txs) ->
+                    transactions.groupBy { it.dateTime.day }.forEach { (day, txs) ->
                         val income  = txs.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
                         val expense = txs.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
                         val date    = LocalDate(year, month, day)

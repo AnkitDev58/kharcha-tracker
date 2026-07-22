@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -113,7 +114,7 @@ private fun ReportContent(report: MonthlyReport, modifier: Modifier = Modifier) 
                 Text("Key Metrics", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(12.dp))
                 MetricRow(Icons.Filled.Receipt, "Total Transactions", report.totalTransactions.toString())
-                MetricRow(Icons.Filled.TrendingDown, "Avg Daily Spend", CurrencyFormatter.format(report.avgDailySpend))
+                MetricRow(Icons.AutoMirrored.Filled.TrendingDown, "Avg Daily Spend", CurrencyFormatter.format(report.avgDailySpend))
                 MetricRow(Icons.Filled.ArrowUpward, "Highest Single Expense", CurrencyFormatter.format(report.highestSingleExpense))
                 MetricRow(Icons.Filled.Category, "Top Spend Category", report.highestExpenseCategory)
                 MetricRow(Icons.Filled.Savings, "Savings Rate", "${(report.savingsRate * 100).toInt()}%")

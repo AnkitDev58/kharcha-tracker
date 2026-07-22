@@ -8,6 +8,7 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
+import kotlinx.datetime.number
 import kotlinx.datetime.plus
 import kotlinx.datetime.todayIn
 import org.example.project.core.util.ClockSystem
@@ -31,22 +32,22 @@ class ReportsViewModel(
 
     init {
         val today = ClockSystem.todayIn(TimeZone.currentSystemDefault())
-        _uiState.update { it.copy(month = today.monthNumber, year = today.year) }
-        load(today.monthNumber, today.year)
+        _uiState.update { it.copy(month = today.month.number, year = today.year) }
+        load(today.month.number, today.year)
     }
 
     fun previousMonth() {
         val s = _uiState.value
         val d = LocalDate(s.year, s.month, 1).minus(1, DateTimeUnit.MONTH)
-        _uiState.update { it.copy(month = d.monthNumber, year = d.year) }
-        load(d.monthNumber, d.year)
+        _uiState.update { it.copy(month = d.month.number, year = d.year) }
+        load(d.month.number, d.year)
     }
 
     fun nextMonth() {
         val s = _uiState.value
         val d = LocalDate(s.year, s.month, 1).plus(1, DateTimeUnit.MONTH)
-        _uiState.update { it.copy(month = d.monthNumber, year = d.year) }
-        load(d.monthNumber, d.year)
+        _uiState.update { it.copy(month = d.month.number, year = d.year) }
+        load(d.month.number, d.year)
     }
 
     private fun load(month: Int, year: Int) {

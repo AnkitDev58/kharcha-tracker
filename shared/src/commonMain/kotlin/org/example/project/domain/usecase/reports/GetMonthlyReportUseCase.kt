@@ -43,7 +43,7 @@ class GetMonthlyReportUseCase(
         val totalOutstanding = loanRepository.getTotalOutstanding()
 
         // Average daily spend: expense / days in month
-        val daysInMonth = DateTimeUtils.monthEnd(month, year).dayOfMonth
+        val daysInMonth = DateTimeUtils.monthEnd(month, year).day
         val avgDailySpend = if (daysInMonth > 0) totalExpense / daysInMonth else 0.0
 
         return MonthlyReport(

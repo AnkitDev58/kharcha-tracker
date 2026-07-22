@@ -15,6 +15,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,6 +31,8 @@ import androidx.compose.ui.unit.sp
 import org.example.project.domain.model.Category
 import org.example.project.domain.model.PaymentMethod
 import org.example.project.domain.model.TransactionType
+import org.example.project.ui.components.AdaptiveScreenWrapper
+import org.example.project.ui.components.WindowSizeClass
 import org.example.project.ui.components.parseHexColor
 import org.example.project.ui.components.toIcon
 import org.example.project.ui.theme.GradientExpenseStart
@@ -40,6 +44,7 @@ import org.example.project.ui.theme.PrimaryPurple
 fun AddEditTransactionScreen(
     viewModel: AddEditTransactionViewModel,
     transactionId: Long = -1L,
+    sizeClass: WindowSizeClass = WindowSizeClass.COMPACT,
     onNavigateBack: () -> Unit
 ) {
     LaunchedEffect(transactionId) {
@@ -52,108 +57,110 @@ fun AddEditTransactionScreen(
         if (state.isSaved) onNavigateBack()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(if (state.isEditMode) "Edit Transaction" else "Add Transaction") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Filled.ArrowBack, "Back")
+    AdaptiveScreenWrapper(sizeClass = sizeClass) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(if (state.isEditMode) "Edit Transaction" else "Add Transaction") },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        }
+                    },
+                    actions = {
+                        TextButton(onClick = { viewModel.save(transactionId) }) {
+                            Text("Save", fontWeight = FontWeight.Bold)
+                        }
                     }
-                },
-                actions = {
-                    TextButton(onClick = { viewModel.save(transactionId) }) {
-                        Text("Save", fontWeight = FontWeight.Bold)
-                    }
+                )
+            }
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Type Toggle
+                TypeToggle(
+                    selected = state.selectedType,
+                    onSelect = viewModel::setType
+                )
+
+                // Amount Input
+                AmountField(
+                    value = state.amount,
+                    onValueChange = viewModel::setAmount,
+                    type = state.selectedType
+                )
+
+                // Category selection
+                val categories = if (state.selectedType == TransactionType.INCOME)
+                    state.incomeCategories else state.expenseCategories
+
+                if (categories.isNotEmpty()) {
+                    Text("Category", style = MaterialTheme.typography.titleSmall)
+                    CategoryGrid(
+                        categories = categories,
+                        selected = state.selectedCategory,
+                        onSelect = viewModel::setCategory
+                    )
                 }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Type Toggle
-            TypeToggle(
-                selected = state.selectedType,
-                onSelect = viewModel::setType
-            )
 
-            // Amount Input
-            AmountField(
-                value = state.amount,
-                onValueChange = viewModel::setAmount,
-                type = state.selectedType
-            )
-
-            // Category selection
-            val categories = if (state.selectedType == TransactionType.INCOME)
-                state.incomeCategories else state.expenseCategories
-
-            if (categories.isNotEmpty()) {
-                Text("Category", style = MaterialTheme.typography.titleSmall)
-                CategoryGrid(
-                    categories = categories,
-                    selected = state.selectedCategory,
-                    onSelect = viewModel::setCategory
+                // Note
+                OutlinedTextField(
+                    value = state.note,
+                    onValueChange = viewModel::setNote,
+                    label = { Text("Note (optional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = { Icon(Icons.AutoMirrored.Filled.Notes, null) },
+                    maxLines = 2
                 )
-            }
 
-            // Note
-            OutlinedTextField(
-                value = state.note,
-                onValueChange = viewModel::setNote,
-                label = { Text("Note (optional)") },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = { Icon(Icons.Filled.Notes, null) },
-                maxLines = 2
-            )
-
-            // Payment Method
-            Text("Payment Method", style = MaterialTheme.typography.titleSmall)
-            PaymentMethodRow(
-                selected = state.paymentMethod,
-                onSelect = viewModel::setPaymentMethod
-            )
-
-            // Favorite toggle
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Mark as Favorite", style = MaterialTheme.typography.bodyMedium)
-                Switch(
-                    checked = state.isFavorite,
-                    onCheckedChange = { viewModel.toggleFavorite() }
+                // Payment Method
+                Text("Payment Method", style = MaterialTheme.typography.titleSmall)
+                PaymentMethodRow(
+                    selected = state.paymentMethod,
+                    onSelect = viewModel::setPaymentMethod
                 )
-            }
 
-            // Error
-            state.error?.let { error ->
-                Text(
-                    error,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
+                // Favorite toggle
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Mark as Favorite", style = MaterialTheme.typography.bodyMedium)
+                    Switch(
+                        checked = state.isFavorite,
+                        onCheckedChange = { viewModel.toggleFavorite() }
+                    )
+                }
 
-            Spacer(Modifier.height(20.dp))
+                // Error
+                state.error?.let { error ->
+                    Text(
+                        error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
 
-            Button(
-                onClick = { viewModel.save(transactionId) },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text(
-                    if (state.isEditMode) "Update Transaction" else "Save Transaction",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Spacer(Modifier.height(20.dp))
+
+                Button(
+                    onClick = { viewModel.save(transactionId) },
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        if (state.isEditMode) "Update Transaction" else "Save Transaction",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

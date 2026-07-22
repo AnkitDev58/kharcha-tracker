@@ -1,7 +1,9 @@
 package org.example.project.domain.usecase.summary
 
 import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.todayIn
 import org.example.project.core.util.ClockSystem
 import org.example.project.domain.model.FinancialSummary
@@ -15,7 +17,7 @@ class GetFinancialSummaryUseCase(
     suspend operator fun invoke(): FinancialSummary {
         val today = ClockSystem.todayIn(TimeZone.currentSystemDefault())
         val year = today.year
-        val month = today.monthNumber
+        val month = today.month.number
 
         val monthStart = "$year-${month.toString().padStart(2, '0')}-01T00:00:00"
         val monthEnd = "$year-${month.toString().padStart(2, '0')}-31T23:59:59"

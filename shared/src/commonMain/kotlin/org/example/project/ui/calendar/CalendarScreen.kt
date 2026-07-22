@@ -116,7 +116,7 @@ private fun CalendarGrid(
     val firstDay = LocalDate(year, month, 1)
     // Monday=1 … Sunday=7; we want Monday as column 0
     val startOffset = ((firstDay.dayOfWeek.ordinal)) // Mon=0 … Sun=6 in kotlinx.datetime
-    val daysInMonth = DateTimeUtils.monthEnd(month, year).dayOfMonth
+    val daysInMonth = DateTimeUtils.monthEnd(month, year).day
 
     val cells = startOffset + daysInMonth
 

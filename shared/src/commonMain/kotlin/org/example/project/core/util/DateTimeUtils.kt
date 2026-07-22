@@ -6,6 +6,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
+import kotlinx.datetime.number
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.todayIn
@@ -22,14 +23,14 @@ object DateTimeUtils {
 
     fun monthStart(month: Int? = null, year: Int? = null): LocalDateTime {
         val today = today()
-        val m = month ?: today.monthNumber
+        val m = month ?: today.month.number
         val y = year ?: today.year
         return LocalDateTime(y, m, 1, 0, 0, 0)
     }
 
     fun monthEnd(month: Int? = null, year: Int? = null): LocalDateTime {
         val today = today()
-        val m = month ?: today.monthNumber
+        val m = month ?: today.month.number
         val y = year ?: today.year
         val lastDay = when (m) {
             1, 3, 5, 7, 8, 10, 12 -> 31
@@ -84,7 +85,7 @@ object DateTimeUtils {
         return when {
             date == today -> "Today"
             date == today.minus(1, DateTimeUnit.DAY) -> "Yesterday"
-            else -> "${date.dayOfMonth} ${monthShortName(date.monthNumber)} ${date.year}"
+            else -> "${date.day} ${monthShortName(date.month.number)} ${date.year}"
         }
     }
 

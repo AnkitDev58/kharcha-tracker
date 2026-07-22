@@ -17,7 +17,7 @@ object CurrencyFormatter {
     }
 
     private fun oneDecimal(value: Double): String {
-        val rounded = kotlin.math.round(value * 10).toDouble() / 10.0
+        val rounded = kotlin.math.round(value * 10) / 10.0
         val intPart = rounded.toLong()
         val decPart = kotlin.math.round((rounded - intPart) * 10).toLong()
         return if (decPart == 0L) "$intPart" else "$intPart.$decPart"

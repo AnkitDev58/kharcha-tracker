@@ -4,7 +4,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.todayIn
 import org.example.project.core.util.ClockSystem
 import org.example.project.domain.model.Budget
@@ -20,7 +22,7 @@ class GetBudgetsWithSpendingUseCase(
 ) {
     operator fun invoke(month: Int? = null, year: Int? = null): Flow<List<Budget>> {
         val today = ClockSystem.todayIn(TimeZone.currentSystemDefault())
-        val targetMonth = month ?: today.monthNumber
+        val targetMonth = month ?: today.month.number
         val targetYear = year ?: today.year
 
         val monthStart = "$targetYear-${targetMonth.toString().padStart(2, '0')}-01T00:00:00"

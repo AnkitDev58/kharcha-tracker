@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.EventNote
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -106,7 +107,8 @@ fun AnnualExpenseScreen(
                 item {
                     Box(Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Filled.EventNote, null, tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            Icon(
+                                Icons.AutoMirrored.Filled.EventNote, null, tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(48.dp))
                             Spacer(Modifier.height(8.dp))
                             Text("No bills added yet", style = MaterialTheme.typography.titleMedium)
@@ -154,7 +156,8 @@ private fun BillItem(
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Filled.EventNote, null,
+                Icon(
+                    Icons.AutoMirrored.Filled.EventNote, null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(22.dp))
             }

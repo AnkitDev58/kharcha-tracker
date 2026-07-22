@@ -1,6 +1,7 @@
 package org.example.project.ui.components
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -15,7 +16,7 @@ fun CategoryIcon.toIcon(): ImageVector = when (this) {
     CategoryIcon.BEAUTY -> Icons.Filled.Face
     CategoryIcon.MEDICAL -> Icons.Filled.LocalHospital
     CategoryIcon.EDUCATION -> Icons.Filled.School
-    CategoryIcon.INVESTMENT -> Icons.Filled.TrendingUp
+    CategoryIcon.INVESTMENT -> Icons.AutoMirrored.Filled.TrendingUp
     CategoryIcon.BILLS -> Icons.Filled.Receipt
     CategoryIcon.TRAVEL -> Icons.Filled.Flight
     CategoryIcon.ENTERTAINMENT -> Icons.Filled.Movie
